@@ -5,6 +5,7 @@ import Common.Protocol;
 import Common.Request;
 import Common.Response;
 
+import java.io.EOFException;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
@@ -19,7 +20,7 @@ public abstract class Server {
         store = new HashMap<>();
     }
 
-    public abstract Request getRequest();
+    public abstract Request getRequest() throws EOFException;
 
     public abstract void response(Response response, Request request);
 
@@ -107,6 +108,7 @@ public abstract class Server {
         return response;
     }
 
+    abstract void run();
     /**
      * close the server
      */

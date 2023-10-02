@@ -58,6 +58,7 @@ public class ClientApp {
                     System.out.print("Type the KEY: ");
                     key = scanner.nextLine();
                     client.request(Operation.GET, key, "");
+                    break;
                 case "3":
                     System.out.print("Type the KEY: ");
                     key = scanner.nextLine();

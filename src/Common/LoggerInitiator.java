@@ -29,6 +29,7 @@ public class LoggerInitiator {
 
         Logger logger = Logger.getGlobal();
         logger.addHandler(fileHandler);
+        logger.setUseParentHandlers(false); //remove console handler
         return logger;
     }
 }
