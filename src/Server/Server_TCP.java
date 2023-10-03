@@ -14,7 +14,7 @@ public class Server_TCP extends Server {
     public Server_TCP(int port) {
         super(port);
         this.protocol = Protocol.TCP;
-        logger = LoggerInitiator.setup("Server_" + protocol);
+        logger = new LogHandler("Server_" + protocol);
         System.out.println("TCP server initiated.");
     }
 
@@ -27,8 +27,7 @@ public class Server_TCP extends Server {
         } catch (EOFException e) {
             throw e;
         } catch (IOException | ClassNotFoundException e) {
-            System.err.println("TCP server cannot read request object from input stream.");
-            logger.severe("TCP server cannot read request object from input stream.");
+            logger.logErr("TCP server cannot read request object from input stream.");
         }
         return null;
     }
@@ -39,8 +38,7 @@ public class Server_TCP extends Server {
             objOut.writeObject(response);
             objOut.flush();
         } catch (IOException e) {
-            System.err.println("TCP server cannot write response object to output stream.");
-            logger.severe(String.format("Cannot write response: %s object to output stream to client %s:%s.", response.content, request.clientAddress, request.clientPort));
+            logger.logErr(String.format("Cannot write response: %s object to output stream to client %s:%s.", response.content, request.clientAddress, request.clientPort));
         }
         System.out.println("Response sent to client.");
     }
@@ -59,29 +57,27 @@ public class Server_TCP extends Server {
                         Request request = this.getRequest();
                         if (request == null)
                             break;
-                        this.log(request);
+                        logger.log(request);
                         Response response;
                         switch (request.operation) {
                             case GET -> response = this.get(request.key);
                             case PUT -> response = this.put(request.key, request.value);
                             case DELETE -> response = this.delete(request.key);
                             default -> {
-                                response = new Response(false, "Invalid operation query.");
-                                this.log(new Response(false, String.format("Received an invalid operation query from %s:%s.", request.clientAddress, port)));
+                                response = new Response(false, String.format("Received an invalid operation query from %s:%s.", request.clientAddress, port));
+                                logger.log(response);
                             }
                         }
                         this.response(response, request);
                     } catch (EOFException e) {
-                        System.err.println("Current client disconnected.");
-                        logger.severe("Current client disconnected.");
+                        logger.logErr("Current client disconnected.");
                         break;
                     }
                 }
                 this.close();
             }
         } catch (IOException e) {
-            System.err.println("Exception on socket and stream initiation.");
-            logger.severe("Exception on socket and stream initiation.");
+            logger.logErr("Exception on socket and stream initiation.");
         }
     }
 
@@ -93,7 +89,7 @@ public class Server_TCP extends Server {
             objIn.close();
             socket.close();
         } catch (IOException e) {
-            logger.severe("Exception on closing server.");
+            logger.logErr("Exception on closing server.");
         }
         System.out.println("TCP server closed.");
     }

@@ -19,15 +19,14 @@ public class Client_TCP extends Client {
     public Client_TCP(InetAddress serverIPAddress, int port) {
         super(serverIPAddress, port);
         this.protocol = Protocol.TCP;
-        logger = LoggerInitiator.setup("Client_" + protocol);
+        logger = new LogHandler("Client_" + protocol);
         try {
             socket = new Socket(serverIPAddress, port);
             socket.setSoTimeout(5000);
             objOut = new ObjectOutputStream(socket.getOutputStream());
             objIn = new ObjectInputStream(socket.getInputStream());
         } catch (IOException e) {
-            System.err.println("Unable to establish socket and stream.");
-            logger.severe("Unable to establish socket and stream.");
+            logger.logErr("Unable to establish socket and stream.");
         }
         System.out.println("TCP client initiated");
     }
@@ -38,7 +37,7 @@ public class Client_TCP extends Client {
         try {
             request.clientAddress = InetAddress.getLocalHost();
         } catch (UnknownHostException e) {
-            System.err.println("Unable to get local host address.");
+            logger.logErr("Unable to get local host address.");
             return;
         }
         request.clientPort = port;
@@ -50,16 +49,13 @@ public class Client_TCP extends Client {
 
             response = (Response) objIn.readObject();
             System.out.println("TCP response received.");
-            log(response);
+            logger.log(response);
         } catch (SocketTimeoutException e) {
-            System.err.println("TCP socket response timed out.");
-            log(new Response(false, String.format("TCP socket response timed out, did not operate %s key: %s value: %s", operation.toString(), key, value)));
+            logger.log(new Response(false, String.format("TCP socket response timed out, did not operate %s key: %s value: %s", operation.toString(), key, value)));
         } catch (IOException e) {
-            System.err.println("TCP Client cannot write request object to output stream.");
-            logger.severe("TCP Client cannot write request object to output stream.");
+            logger.logErr("TCP Client cannot write request object to output stream.");
         } catch (ClassNotFoundException e) {
-            System.err.println("TCP Client cannot read response object to input stream.");
-            logger.severe("TCP Client cannot read response object to input stream.");
+            logger.logErr("TCP Client cannot read response object to input stream.");
         }
     }
 

@@ -1,6 +1,6 @@
 package Server;
 
-import Common.LoggerInitiator;
+import Common.LogHandler;
 import Common.Protocol;
 import Common.Request;
 import Common.Response;
@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 public abstract class Server {
     int port;
     Protocol protocol;
-    Logger logger;
+    LogHandler logger;
     HashMap<String, String> store;
 
     public Server(int port) {
@@ -36,27 +36,6 @@ public abstract class Server {
     public abstract void response(Response response, Request request);
 
     /**
-     * Display the requests received from a particular
-     * InetAddress and port number for a specific word
-     * @param request
-     */
-    void log(Request request) {
-        logger.info(String.format("Received %s query from %s:%s, key: %s, value(if applicable): %s.", request.operation.toString(), request.clientAddress, request.clientPort, request.key, request.value));
-    }
-
-    /**
-     * Display the response to a query
-     * @param response
-     */
-    void log(Response response) {
-        if (response.status) {
-            logger.info(response.content);
-        } else {
-            logger.severe(response.content);
-        }
-    }
-
-    /**
      * manipulate PUT operation
      * if there's an existing entry, fail the operation
      * log and return the response
@@ -74,7 +53,7 @@ public abstract class Server {
             response.status = true;
             response.content = String.format("Operation succeed. Added key [%s] value [%s] pair to store.", key, value);
         }
-        log(response);
+        logger.log(response);
         return response;
     }
 
@@ -94,7 +73,7 @@ public abstract class Server {
             response.status = true;
             response.content = String.format("Operation succeed. Value of key [%s] in store is: %s.", key, store.get(key));
         }
-        log(response);
+        logger.log(response);
         return response;
     }
 
@@ -115,7 +94,7 @@ public abstract class Server {
             response.status = true;
             response.content = String.format("Operation succeed. key-value pair [%s-%s] was deleted", key, v);
         }
-        log(response);
+        logger.log(response);
         return response;
     }
 

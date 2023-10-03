@@ -1,6 +1,6 @@
 package Server;
 
-import Common.LoggerInitiator;
+import Common.LogHandler;
 import Common.Protocol;
 import Common.Request;
 import Common.Response;
@@ -16,10 +16,9 @@ public class Server_UDP extends Server{
         try {
             socket = new DatagramSocket(port);
         } catch (SocketException e) {
-            System.err.println("Exception on establishing datagram socket.");
-            logger.severe("Exception on establishing datagram socket.");
+            logger.logErr("Exception on establishing datagram socket.");
         }
-        logger = LoggerInitiator.setup("Server_"+ protocol);
+        logger = new LogHandler("Server_"+ protocol);
         System.out.println("UDP server initiated.");
     }
 
@@ -36,17 +35,15 @@ public class Server_UDP extends Server{
                 Request request = (Request) objIn.readObject();
                 request.clientAddress = query.getAddress();
                 request.clientPort = query.getPort();
+                logger.log(request);
                 return request;
             } catch (IOException e) {
-                System.err.println("Cannot establish input stream.");
-                logger.severe("Cannot establish input stream.");
+                logger.logErr("Cannot establish input stream.");
             } catch (ClassNotFoundException e) {
-                System.err.println("Unable to parse request object from input stream, class not found.");
-                logger.severe("Unable to parse request object from input stream, class not found.");
+                logger.logErr("Unable to parse request object from input stream, class not found.");
             }
         } catch (IOException e) {
-            System.err.println("Cannot receive request from input stream.");
-            logger.severe("Cannot receive request from input stream.");
+            logger.logErr("Cannot receive request from input stream.");
         }
         return null;
     }
@@ -59,10 +56,9 @@ public class Server_UDP extends Server{
 
             DatagramPacket responsePacket = new DatagramPacket(byteOut.toByteArray(), byteOut.toByteArray().length, request.clientAddress, request.clientPort);
             socket.send(responsePacket);
-            System.out.printf("Sent response to client %s:%s.%n", request.clientAddress, request.clientPort);
+            logger.logInfo(String.format("Sent response to client %s:%s.%n", request.clientAddress, request.clientPort));
         } catch (IOException e) {
-            System.err.println("Cannot write response to output stream and send to client.");
-            logger.severe("Cannot write response to output stream and send to client.");
+            logger.logErr("Cannot write response to output stream and send to client.");
         }
     }
 
@@ -71,15 +67,15 @@ public class Server_UDP extends Server{
             Request request = this.getRequest();
             if(request == null)
                 continue;
-            this.log(request);
+
             Response response;
             switch (request.operation) {
                 case GET -> response = this.get(request.key);
                 case PUT -> response = this.put(request.key, request.value);
                 case DELETE -> response = this.delete(request.key);
                 default -> {
-                    response = new Response(false, "Invalid operation query.");
-                    this.log(new Response(false, String.format("Received an invalid operation query from %s:%s.", request.clientAddress, request.clientPort)));
+                    response = new Response(false, String.format("Received an invalid operation query from %s:%s.", request.clientAddress, request.clientPort));
+                    logger.log(response);
                 }
             }
             this.response(response, request);

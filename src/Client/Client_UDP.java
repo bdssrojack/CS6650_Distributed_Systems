@@ -14,13 +14,12 @@ public class Client_UDP extends Client {
     public Client_UDP(InetAddress serverIPAddress, int port) {
         super(serverIPAddress, port);
         protocol = Protocol.UDP;
-        logger = LoggerInitiator.setup("Client_"+ protocol);
+        logger = new LogHandler("Client_"+ protocol);
         try {
             socket = new DatagramSocket();
             socket.setSoTimeout(5000);
         } catch (IOException e) {
-            System.err.println("Unable to establish socket.");
-            logger.severe("Unable to establish socket.");
+            logger.logErr("Unable to establish socket.");
         }
         System.out.println("UDP client initiated.");
     }
@@ -44,17 +43,14 @@ public class Client_UDP extends Client {
             try(ByteArrayInputStream byteIn = new ByteArrayInputStream(buffer);
                 ObjectInputStream objIn = new ObjectInputStream(byteIn)){
                 Response response = (Response) objIn.readObject();
-                log(response);
+                logger.log(response);
             } catch (IOException e) {
-                System.err.println("Unable to read response object from input stream.");
-                logger.severe("Unable to read response object from input stream.");
+                logger.logErr("Unable to read response object from input stream.");
             }
         } catch (SocketTimeoutException e) {
-            System.err.println("UDP packet receive timed out.");
-            log(new Response(false, String.format("UDP packet receive timed out, did not operate %s key: %s value: %s", operation.toString(), key, value)));
+            logger.log(new Response(false, String.format("UDP packet receive timed out, did not operate %s key: %s value: %s", operation.toString(), key, value)));
         } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Exception on write and send request object.");
-            logger.severe("Exception on write and send request object.");
+            logger.logErr("Exception on write and send request object.");
         }
     }
 

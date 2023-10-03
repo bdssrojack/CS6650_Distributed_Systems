@@ -1,10 +1,8 @@
 package Client;
 import Common.*;
 
-import java.awt.desktop.SystemEventListener;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.logging.*;
 
 /**
  * An abstract class for clients
@@ -13,7 +11,7 @@ public abstract class Client {
     InetAddress serverIPAddress;
     int port;
     Protocol protocol;
-    Logger logger;
+    LogHandler logger;
     public Client(InetAddress serverIPAddress, int port) {
         this.serverIPAddress = serverIPAddress;
         this.port = port;
@@ -30,20 +28,6 @@ public abstract class Client {
      * @param value value to store
      */
     public abstract void request(Operation operation, String key, String value);
-
-    /**
-     * Log out the response from server to log file, maintain millisecond precision
-     * @param response log content
-     */
-    void log(Response response) {
-        if (response.status) {
-            logger.info(response.content);
-            System.out.println(response.content);
-        } else {
-            logger.severe(response.content);
-            System.err.println(response.content);
-        }
-    }
 
     /**
      * pre-populate some data by client in the server key-value store before interaction
