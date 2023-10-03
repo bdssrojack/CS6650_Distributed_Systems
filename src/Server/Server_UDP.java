@@ -16,7 +16,8 @@ public class Server_UDP extends Server{
         try {
             socket = new DatagramSocket(port);
         } catch (SocketException e) {
-            throw new RuntimeException(e);
+            System.err.println("Exception on establishing datagram socket.");
+            logger.severe("Exception on establishing datagram socket.");
         }
         logger = LoggerInitiator.setup("Server_"+ protocol);
         System.out.println("UDP server initiated.");
@@ -28,7 +29,7 @@ public class Server_UDP extends Server{
             byte[] buffer = new byte[1024];
             DatagramPacket query = new DatagramPacket(buffer, buffer.length);
             socket.receive(query);
-            System.out.println("UDP packet received.");
+            System.out.println("UDP packet received from client.");
 
             try(ByteArrayInputStream byteIn = new ByteArrayInputStream(buffer);
                 ObjectInputStream objIn = new ObjectInputStream(byteIn)) {
@@ -36,13 +37,18 @@ public class Server_UDP extends Server{
                 request.clientAddress = query.getAddress();
                 request.clientPort = query.getPort();
                 return request;
-            } catch (IOException | ClassNotFoundException e) {
-                throw new RuntimeException(e);
+            } catch (IOException e) {
+                System.err.println("Cannot establish input stream.");
+                logger.severe("Cannot establish input stream.");
+            } catch (ClassNotFoundException e) {
+                System.err.println("Unable to parse request object from input stream, class not found.");
+                logger.severe("Unable to parse request object from input stream, class not found.");
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.err.println("Cannot receive request from input stream.");
+            logger.severe("Cannot receive request from input stream.");
         }
-
+        return null;
     }
 
     @Override
@@ -54,8 +60,9 @@ public class Server_UDP extends Server{
             DatagramPacket responsePacket = new DatagramPacket(byteOut.toByteArray(), byteOut.toByteArray().length, request.clientAddress, request.clientPort);
             socket.send(responsePacket);
             System.out.printf("Sent response to client %s:%s.%n", request.clientAddress, request.clientPort);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (IOException e) {
+            System.err.println("Cannot write response to output stream and send to client.");
+            logger.severe("Cannot write response to output stream and send to client.");
         }
     }
 
@@ -80,7 +87,5 @@ public class Server_UDP extends Server{
     }
 
     @Override
-    void close() {
-
-    }
+    void close() {}
 }

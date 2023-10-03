@@ -11,6 +11,11 @@ import java.io.*;
  */
 public class ServerApp {
     public static void main(String[] args) {
+        if (args.length != 2) {
+            System.err.println("Invalid arguments, please follow the format: <port number> <protocol (UDP/TCP)>");
+            return;
+        }
+
         int port = Integer.parseInt(args[0]);
         String protocol = args[1];
 
@@ -25,23 +30,7 @@ public class ServerApp {
             return;
         }
 
+        System.out.println("Server started.");
         server.run();
-//        while (true) {
-//            Request request = server.getRequest();
-//            if(request == null)
-//                continue;
-//            server.log(request);
-//            Response response;
-//            switch (request.operation) {
-//                case GET -> response = server.get(request.key);
-//                case PUT -> response = server.put(request.key, request.value);
-//                case DELETE -> response = server.delete(request.key);
-//                default -> {
-//                    response = new Response(false, "Invalid operation query.");
-//                    server.log(new Response(false, String.format("Received an invalid operation query from %s:%s.", request.clientAddress, request.clientPort)));
-//                }
-//            }
-//            server.response(response, request);
-//        }
     }
 }

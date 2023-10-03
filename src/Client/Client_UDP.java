@@ -10,10 +10,6 @@ import java.net.*;
  */
 public class Client_UDP extends Client {
     DatagramSocket socket;
-//    ByteArrayOutputStream byteOut;
-//    ObjectOutputStream objOut;
-//    ByteArrayInputStream byteIn;
-//    ObjectInputStream objIn;
 
     public Client_UDP(InetAddress serverIPAddress, int port) {
         super(serverIPAddress, port);
@@ -22,11 +18,11 @@ public class Client_UDP extends Client {
         try {
             socket = new DatagramSocket();
             socket.setSoTimeout(5000);
-//            byteOut = new ByteArrayOutputStream();
-//            objOut = new ObjectOutputStream(byteOut);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.err.println("Unable to establish socket.");
+            logger.severe("Unable to establish socket.");
         }
+        System.out.println("UDP client initiated.");
     }
 
     @Override
@@ -38,23 +34,27 @@ public class Client_UDP extends Client {
 
             DatagramPacket packet = new DatagramPacket(byteOut.toByteArray(), byteOut.toByteArray().length, serverIPAddress, port);
             socket.send(packet);
-            System.out.println("UDP packet sent. Waiting for response.");
+            System.out.println("UDP packet sent. Waiting for server response.");
 
             byte[] buffer = new byte[1024];
             DatagramPacket reply = new DatagramPacket(buffer, buffer.length);
             socket.receive(reply);
+            System.out.println("UDP packet response received from server.");
 
             try(ByteArrayInputStream byteIn = new ByteArrayInputStream(buffer);
                 ObjectInputStream objIn = new ObjectInputStream(byteIn)){
                 Response response = (Response) objIn.readObject();
                 log(response);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                System.err.println("Unable to read response object from input stream.");
+                logger.severe("Unable to read response object from input stream.");
             }
         } catch (SocketTimeoutException e) {
+            System.err.println("UDP packet receive timed out.");
             log(new Response(false, String.format("UDP packet receive timed out, did not operate %s key: %s value: %s", operation.toString(), key, value)));
         } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            System.err.println("Exception on write and send request object.");
+            logger.severe("Exception on write and send request object.");
         }
     }
 

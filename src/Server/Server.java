@@ -20,8 +20,19 @@ public abstract class Server {
         store = new HashMap<>();
     }
 
+    /**
+     * Get the request from client
+     *
+     * @return a Request object
+     * @throws EOFException notify the main loop the current client is disconnected.
+     */
     public abstract Request getRequest() throws EOFException;
 
+    /**
+     * Response to client
+     * @param response the response object
+     * @param request request from client to identify the return address and port
+     */
     public abstract void response(Response response, Request request);
 
     /**
@@ -30,7 +41,7 @@ public abstract class Server {
      * @param request
      */
     void log(Request request) {
-        logger.info(String.format("Received %s query from %s:%s, key: %s, value(if applicable): %s.", request.operation.toString(), request.clientAddress, port, request.key, request.value));
+        logger.info(String.format("Received %s query from %s:%s, key: %s, value(if applicable): %s.", request.operation.toString(), request.clientAddress, request.clientPort, request.key, request.value));
     }
 
     /**
@@ -56,12 +67,12 @@ public abstract class Server {
     Response put(String key, String value) {
         Response response = new Response();
         if (store.containsKey(key)) {
-            response.status = false;
-            response.content = String.format("Operation failed. Can not PUT key [%s] value [%s], key pre-exists.", key, value);
+            response.status = true;
+            response.content = String.format("Operation succeed. Updated key [%s] with value [%s].", key, value);
         } else {
             store.put(key, value);
             response.status = true;
-            response.content = String.format("Operation succeed. PUT key [%s] value [%s] to store.", key, value);
+            response.content = String.format("Operation succeed. Added key [%s] value [%s] pair to store.", key, value);
         }
         log(response);
         return response;
@@ -102,15 +113,19 @@ public abstract class Server {
         } else {
             String v = store.remove(key);
             response.status = true;
-            response.content = String.format("Operation succeed. key-value pair [%s-%s] is deleted", key, v);
+            response.content = String.format("Operation succeed. key-value pair [%s-%s] was deleted", key, v);
         }
         log(response);
         return response;
     }
 
-    abstract void run();
     /**
-     * close the server
+     * Start the server main loop listening to client requests.
+     */
+    abstract void run();
+
+    /**
+     * Close the server
      */
     abstract void close();
 }
