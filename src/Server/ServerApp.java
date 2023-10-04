@@ -1,11 +1,5 @@
 package Server;
 
-import Common.Request;
-import Common.Response;
-
-import java.net.*;
-import java.io.*;
-
 /**
  * Entry point of the server as an app, works for both UDP and TCP
  */

@@ -1,5 +1,6 @@
 package Common;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -13,8 +14,12 @@ public class LogHandler {
 
     public LogHandler(String name) {
         FileHandler fileHandler;
+        File dir = new File("logs");
+        if (!dir.exists()) {
+            dir.mkdir();
+        }
         try {
-            fileHandler = new FileHandler(name + new SimpleDateFormat("M-d-yyyy HH_mm").format(Calendar.getInstance().getTime()) + ".log");
+            fileHandler = new FileHandler("logs/" + name + new SimpleDateFormat("M-d-yyyy HH_mm").format(Calendar.getInstance().getTime()) + ".log");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

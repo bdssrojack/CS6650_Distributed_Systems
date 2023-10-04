@@ -1,13 +1,9 @@
 package Server;
 
-import Common.LogHandler;
-import Common.Protocol;
-import Common.Request;
-import Common.Response;
+import Common.*;
 
 import java.io.EOFException;
 import java.util.HashMap;
-import java.util.logging.Logger;
 
 public abstract class Server {
     int port;
