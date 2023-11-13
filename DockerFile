@@ -1,0 +1,30 @@
+# syntax=docker/dockerfile:1
+# Start with a base image containing Maven (this will be our build environment)
+FROM maven:3.8-jdk-17 as build
+
+# Set the working directory in the Docker container
+WORKDIR /app
+
+# Copy the pom.xml file to download dependencies
+COPY pom.xml .
+
+# Download the dependencies - this can be cached if the pom.xml doesn't change
+RUN mvn dependency:go-offline
+
+# Copy the rest of the source code
+COPY src/ /app/src/
+
+# Build the project
+RUN mvn clean package
+
+# Now, use another image to run our JAR. This makes the image smaller.
+FROM openjdk:17-jdk
+
+# Copy over the built artifact from the maven image
+COPY --from=build /app/target/server.jar /app/server.jar
+COPY --from=build /app/target/client.jar /app/client.jar
+
+# The command to run our app when the container is started
+CMD ["java", "-jar", "/app/server.jar"]
+
+
