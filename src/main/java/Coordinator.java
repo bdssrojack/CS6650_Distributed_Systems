@@ -1,3 +1,5 @@
+import com.cs6650.server_client.Request;
+
 public interface Coordinator {
     /**
      * Call from participant to confirm that it has committed the transaction with tid.
@@ -15,4 +17,12 @@ public interface Coordinator {
      * @return true if to commit, false if to abort
      */
     public boolean getDecision(String tid);
+
+    /**
+     * Call from participant to inform the coordinator that new transaction has been raised.
+     *
+     * @param tid transaction id
+     * @param request detail of transaction
+     */
+    public void newRequest(String tid, Request request);
 }

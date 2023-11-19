@@ -11,10 +11,15 @@ public class MessageLib {
      */
     private static final String KEY_UPDATED = "Updated key [%s] with value [%s].";
     private static final String KEY_ADDED = "Added key [%s] - value [%s] pair to store.";
+    private static final String KEY_PUT = "Put key [%s] - value [%s] pair to store.";
     private static final String PUT_FAILED = "Can not add/update key [%s] with empty value.";
 
     public static String UPDATE_SUCCEED(String key, String value) {
         return OPERATION_SUCCEED + String.format(KEY_UPDATED, key, value);
+    }
+
+    public static String PUT_SUCCEED(String key, String value) {
+        return OPERATION_SUCCEED + String.format(KEY_PUT, key, value);
     }
 
     public static String ADD_SUCCEED(String key, String value) {

@@ -100,13 +100,16 @@ public class ClientApp {
                 case "1" -> {
                     System.out.print("Type the VALUE: ");
                     value = scanner.nextLine();
+                    if(value.isEmpty()){
+                        System.err.println("Value cannot be empty.");
+                        continue;
+                    }
                     client.operate(Operation.PUT, key, value);
                 }
                 case "2" -> client.operate(Operation.GET, key, "");
                 case "3" -> client.operate(Operation.DELETE, key, "");
                 default -> System.err.println("Invalid choice, please type 1, 2 or 3 to choose an operation.");
             }
-
         }
 
         // RPC shutdown
