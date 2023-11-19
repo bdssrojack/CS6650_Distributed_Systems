@@ -7,10 +7,10 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.logging.*;
 
-public class LogHandler {
-    Logger logger;
+public class LogHandler extends Logger {
 
     public LogHandler(String name) {
+        super(name, null);
         FileHandler fileHandler;
         File dir = new File("logs");
         if (!dir.exists()) {
@@ -29,9 +29,8 @@ public class LogHandler {
         };
         fileHandler.setFormatter(simpleFormatter);
 
-        logger = Logger.getGlobal();
-        logger.addHandler(fileHandler);
-        logger.setUseParentHandlers(false); //remove console handler
+        this.addHandler(fileHandler);
+        this.setUseParentHandlers(false); //remove console handler
     }
 
     public void log(Response response) {
@@ -51,12 +50,12 @@ public class LogHandler {
     }
 
     private void logInfo(String content) {
-        logger.info(content);
+        this.info(content);
         System.out.println(content);
     }
 
     private void logErr(String err) {
-        logger.severe(err);
+        this.severe(err);
         System.out.println(err);
     }
 

@@ -1,5 +1,5 @@
 syntax = "proto3";
-
+import "google/protobuf/empty.proto";
 package server_client;
 
 option java_multiple_files = true;
@@ -8,6 +8,13 @@ option java_outer_classname = "ServerClientProto";
 
 service Service {
   rpc Operate(Request) returns (Response);
+  rpc CanCommit(Tid) returns(Bool);
+  rpc DoCommit(Tid) returns(google.protobuf.Empty);
+  rpc DoAbort(Tid) returns(google.protobuf.Empty);
+  rpc HaveCommitted(Tid) returns(google.protobuf.Empty);
+  rpc NewRequest(Notif) returns(google.protobuf.Empty);
+  rpc GetDecision(Tid) returns(google.protobuf.Empty);
+
 }
 
 message Request {
@@ -19,6 +26,19 @@ message Request {
 message Response {
   bool status = 1;
   optional string msg = 2;
+}
+
+message Tid {
+  string tid = 1;
+}
+
+message Notif {
+  string tid = 1;
+  Request request = 2;
+}
+
+message Bool {
+  bool status = 1;
 }
 
 enum Operation {

@@ -13,11 +13,6 @@ import java.util.concurrent.TimeUnit;
 
 public class ClientApp {
     private static final LogHandler logger = new LogHandler(ClientApp.class.getSimpleName());
-    private static final String[] replicas = {"localhost:14515",
-            "localhost:14516",
-            "localhost:14517",
-            "localhost:14518",
-            "localhost:14519"};
     private final ServiceGrpc.ServiceBlockingStub blockingStub;
 
     public ClientApp(Channel channel) {
@@ -48,14 +43,15 @@ public class ClientApp {
             System.err.println("Please don't attach any argument. You can specify a replica to connect to later.");
             return;
         } else {
-            target = replicas[new Random().nextInt(replicas.length)];
+            target = Utils.replicas[new Random().nextInt(Utils.replicas.length)];
         }
 
         // connect to participant
         ManagedChannel channel = Grpc.newChannelBuilder(target, InsecureChannelCredentials.create()).build();
         ClientApp client = new ClientApp(channel);
+        System.out.printf("Connected to target %s\n", target);
 
-        client.prePop();
+//        client.prePop();
 
         Scanner scanner = new Scanner(System.in);
 
@@ -72,13 +68,13 @@ public class ClientApp {
 
             if (operation.equals("s")) {
                 System.out.println("Choose a node to connect to by typing the index.");
-                for(int i = 0; i < replicas.length; i++){
-                    System.out.println((i+1) + ". " + replicas[i]);
+                for(int i = 0; i < Utils.replicas.length; i++){
+                    System.out.println((i+1) + ". " + Utils.replicas[i]);
                 }
 
                 int newNodeIdx = Integer.parseInt(scanner.nextLine()) - 1;
-                if(newNodeIdx < 0 || newNodeIdx >= replicas.length){
-                    System.err.printf("Invalid index, provide a number between 1 to %s.\n", replicas.length);
+                if(newNodeIdx < 0 || newNodeIdx >= Utils.replicas.length){
+                    System.err.printf("Invalid index, provide a number between 1 to %s.\n", Utils.replicas.length);
                     continue;
                 }
 
@@ -86,7 +82,7 @@ public class ClientApp {
                 channel.shutdownNow();
                 if(channel.isShutdown()){
                     System.out.printf("Current channel to %s is shut down.\n", target);
-                    target = replicas[newNodeIdx];
+                    target = Utils.replicas[newNodeIdx];
                     System.out.printf("Connecting to %s.\n", target);
                     channel = Grpc.newChannelBuilder(target, InsecureChannelCredentials.create()).build();
                     client = new ClientApp(channel);
@@ -113,6 +109,7 @@ public class ClientApp {
 
         }
 
+        // RPC shutdown
         channel.shutdownNow().awaitTermination(60, TimeUnit.SECONDS);
     }
 
