@@ -35,7 +35,7 @@ public class ClientApp {
         operate(Operation.PUT, "Google", "www.google.com");
     }
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
         String target;
 
         // init: randomly pick a participant to connect
@@ -51,7 +51,7 @@ public class ClientApp {
         ClientApp client = new ClientApp(channel);
         System.out.printf("Connected to target %s\n", target);
 
-//        client.prePop();
+        client.prePop();
 
         Scanner scanner = new Scanner(System.in);
 
@@ -62,10 +62,12 @@ public class ClientApp {
             System.out.println("Choose the operation: 1)PUT, 2)GET, 3)DELETE. Type 'q' to exit. Type 's' to change server node.");
             operation = scanner.nextLine();
 
+            // quit
             if (operation.equals("q")) {
                 break;
             }
 
+            // change server node
             if (operation.equals("s")) {
                 System.out.println("Choose a node to connect to by typing the index.");
                 for(int i = 0; i < Utils.replicas.length; i++){
@@ -113,7 +115,11 @@ public class ClientApp {
         }
 
         // RPC shutdown
-        channel.shutdownNow().awaitTermination(60, TimeUnit.SECONDS);
+        try {
+            channel.shutdownNow().awaitTermination(60, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            System.err.printf("Client channel shutdown error. %s\n", e);
+        }
     }
 
 }

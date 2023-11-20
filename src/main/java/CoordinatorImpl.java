@@ -1,14 +1,12 @@
 import com.cs6650.server_client.*;
-import com.google.protobuf.Empty;
 import io.grpc.*;
 import io.grpc.stub.StreamObserver;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class CoordinatorImpl implements Coordinator {
+public class CoordinatorImpl {
     private LogHandler logger;
     private final Server server;
 
@@ -44,9 +42,12 @@ public class CoordinatorImpl implements Coordinator {
         }
     }
 
-    class ServerImpl extends ServiceGrpc.ServiceImplBase {
+    static class ServerImpl extends ServiceGrpc.ServiceImplBase {
         //TODO: log out info
 
+        /**
+         * Call from participant to inform the coordinator that new transaction has been raised.
+         */
         @Override
         public void newRequest(Trans transaction, StreamObserver<Response> responseObserver){
             boolean commit = true;
@@ -58,34 +59,44 @@ public class CoordinatorImpl implements Coordinator {
             }
 
             Response response = null;
-            String msg;
-            String key = transaction.getRequest().getKey(), value = transaction.getRequest().getValue();
-            Operation operation = transaction.getRequest().getOperation();
-
             if(commit){
                 for(String replicaHost : Utils.replicas){
                     ManagedChannel channel = Grpc.newChannelBuilder(replicaHost, InsecureChannelCredentials.create()).build();
                     Response commitRes = ServiceGrpc.newBlockingStub(channel).doCommit(transaction.getTid());
+                    if(response == null)
+                        response = commitRes;
                     channel.shutdownNow();
-                }
-                switch (operation){
-                    case PUT -> response = Response.newBuilder().setStatus(true).setMsg(MessageLib.PUT_SUCCEED(key, value)).build();
-                    case DELETE -> response = Response.newBuilder().setStatus(true).setMsg(MessageLib.DELETE_SUCCEED(key, value)).build();
                 }
             } else {
                 for(String replicaHost : Utils.replicas){
                     ManagedChannel channel = Grpc.newChannelBuilder(replicaHost, InsecureChannelCredentials.create()).build();
-                    ServiceGrpc.newBlockingStub(channel).doAbort(transaction.getTid());
+                    Response abortRes = ServiceGrpc.newBlockingStub(channel).doAbort(transaction.getTid());
+                    if (response == null)
+                        response = abortRes;
                     channel.shutdownNow();
-                }
-                switch (operation){
-                    case PUT -> response = Response.newBuilder().setStatus(false).setMsg(MessageLib.UPDATE_FAILED(key)).build();
-                    case DELETE -> response = Response.newBuilder().setStatus(false).setMsg(MessageLib.GET_FAILED(key)).build();
                 }
             }
 
             responseObserver.onNext(response);
             responseObserver.onCompleted();
+        }
+
+        /**
+         * Call from participant to ask for the decision on a transaction by tid when it
+         * has voted Yes but has still had no reply after some delay. Used to recover from server
+         * crash or delayed messages.
+         */
+        @Override
+        public void getDecision(Tid tid, StreamObserver<Response> responseStreamObserver) {
+
+        }
+
+        /**
+         * Call from participant to confirm that it has committed the transaction with tid.
+         */
+        @Override
+        public void haveCommitted(Tid tid, StreamObserver<Response> responseStreamObserver) {
+
         }
     }
 
@@ -99,18 +110,5 @@ public class CoordinatorImpl implements Coordinator {
         System.out.println("Coordinator started.");
         this.blockUntilShutdown();
     }
-
-    public void haveCommitted(String tid) {
-
-    }
-
-    public void newRequest(String tid, Request request){
-
-    }
-
-    public boolean getDecision(String tid) {
-        return false;
-    }
-
 
 }

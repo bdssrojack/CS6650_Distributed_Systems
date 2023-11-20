@@ -1,17 +1,13 @@
 import com.cs6650.server_client.*;
-import com.google.protobuf.Empty;
 import io.grpc.*;
 import io.grpc.stub.StreamObserver;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class ParticipantImpl implements Participant {
+public class ParticipantImpl {
     private int port;
     private ConcurrentHashMap<String, Request> tmp;
     private ConcurrentHashMap<String, String> store;
@@ -59,11 +55,14 @@ public class ParticipantImpl implements Participant {
     class ServerImpl extends ServiceGrpc.ServiceImplBase {
         //TODO: log out info
 
+        /**
+         * Call from clients of an operation request.
+         */
         @Override
         public void operate(Request request, StreamObserver<Response> responseObserver) {
             logger.log(request);
 
-            // case GET
+            // case GET/Invalid
             Operation o = request.getOperation();
             String key = request.getKey();
             if (o == Operation.GET) {
@@ -77,7 +76,7 @@ public class ParticipantImpl implements Participant {
                 responseObserver.onCompleted();
                 logger.log(response);
                 return;
-            } else if (o == Operation.DELETE && !store.contains(key)) {
+            } else if (o == Operation.DELETE && !store.containsKey(key)) {
                 responseObserver.onNext(Response.newBuilder().setStatus(false).setMsg(MessageLib.GET_FAILED(key)).build());
                 responseObserver.onCompleted();
                 return;
@@ -102,19 +101,28 @@ public class ParticipantImpl implements Participant {
             logger.log(response);
         }
 
+        /**
+         * Call from coordinator to ask whether it can commit a transaction.
+         */
         @Override
         public void canCommit(Trans transaction, StreamObserver<Response> responseObserver) {
+            // store the request in temporary storage
             tmp.put(transaction.getTid().getTid(), transaction.getRequest());
+            // always return true as simplification
             responseObserver.onNext(Response.newBuilder().setStatus(true).build());
             responseObserver.onCompleted();
         }
 
+        /**
+         * Call from coordinator to tell all participants to commit its part of a transaction.
+         */
         @Override
         public void doCommit(Tid tid, StreamObserver<Response> responseObserver){
             Request request = tmp.get(tid.getTid());
             Response response = null;
             Operation o = request.getOperation();
             String key = request.getKey(), value = request.getValue();
+
             switch (o) {
                 case PUT -> {
                     if (value.isBlank() || value.isEmpty()) {
@@ -132,11 +140,21 @@ public class ParticipantImpl implements Participant {
                         value = store.get(key);
                         store.remove(key);
                         response = Response.newBuilder().setStatus(true).setMsg(MessageLib.DELETE_SUCCEED(key, value)).build();
+                    } else {
+                        response = Response.newBuilder().setStatus(false).setMsg(MessageLib.GET_FAILED(key)).build();
                     }
                 }
             }
             responseObserver.onNext(response);
             responseObserver.onCompleted();
+        }
+
+        /**
+         * Call from coordinator to tell participant to abort its part of a transaction
+         */
+        @Override
+        public void doAbort(Tid tid, StreamObserver<Response> responseObserver){
+
         }
     }
 
@@ -156,18 +174,6 @@ public class ParticipantImpl implements Participant {
         this.start();
         System.out.printf("Participant %s started.\n", port);
         this.blockUntilShutdown();
-    }
-
-    public boolean canCommit(String tid) {
-        return true;
-    }
-
-    public void doCommit(String tid) {
-
-    }
-
-    public void doAbort(String tid) {
-
     }
 
     private String genTid() {
