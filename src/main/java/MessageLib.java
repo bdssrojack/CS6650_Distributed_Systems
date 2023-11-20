@@ -1,4 +1,5 @@
 import com.cs6650.server_client.Operation;
+import com.cs6650.server_client.Request;
 
 public class MessageLib {
     /* status */
@@ -62,6 +63,10 @@ public class MessageLib {
     public static String REQUEST(Operation operation, String key, String value) {
         return "Request: " + (value.isEmpty() ? String.format(REQUEST_WITHOUT_VALUE, operation, key) :
                                 String.format(REQUEST_WITH_VALUE, operation, key, value));
+    }
+
+    public static String REQUEST(Request request){
+        return REQUEST(request.getOperation(), request.getKey(), request.getValue());
     }
 
 }

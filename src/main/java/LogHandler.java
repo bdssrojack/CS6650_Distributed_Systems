@@ -49,12 +49,12 @@ public class LogHandler extends Logger {
         logInfo(content);
     }
 
-    private void logInfo(String content) {
+    public void logInfo(String content) {
         this.info(content);
         System.out.println(content);
     }
 
-    private void logErr(String err) {
+    public void logErr(String err) {
         this.severe(err);
         System.out.println(err);
     }

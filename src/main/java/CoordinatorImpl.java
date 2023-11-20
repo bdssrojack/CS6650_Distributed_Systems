@@ -42,14 +42,14 @@ public class CoordinatorImpl {
         }
     }
 
-    static class ServerImpl extends ServiceGrpc.ServiceImplBase {
-        //TODO: log out info
+    class ServerImpl extends ServiceGrpc.ServiceImplBase {
 
         /**
          * Call from participant to inform the coordinator that new transaction has been raised.
          */
         @Override
         public void newRequest(Trans transaction, StreamObserver<Response> responseObserver){
+            logger.logInfo(String.format("New %s [%s] received.", MessageLib.REQUEST(transaction.getRequest()),transaction.getTid().getTid()));
             boolean commit = true;
             for(String replicaHost : Utils.replicas){
                 ManagedChannel channel = Grpc.newChannelBuilder(replicaHost, InsecureChannelCredentials.create()).build();
@@ -79,6 +79,7 @@ public class CoordinatorImpl {
 
             responseObserver.onNext(response);
             responseObserver.onCompleted();
+            logger.logInfo(String.format("New %s [%s] done.", MessageLib.REQUEST(transaction.getRequest()),transaction.getTid().getTid()));
         }
 
         /**

@@ -53,7 +53,6 @@ public class ParticipantImpl {
      * Implementation of Service, contains the business logic
      */
     class ServerImpl extends ServiceGrpc.ServiceImplBase {
-        //TODO: log out info
 
         /**
          * Call from clients of an operation request.
@@ -106,11 +105,13 @@ public class ParticipantImpl {
          */
         @Override
         public void canCommit(Trans transaction, StreamObserver<Response> responseObserver) {
+            logger.logInfo(String.format("Preparing %s [%s].", MessageLib.REQUEST(transaction.getRequest()),transaction.getTid().getTid()));
             // store the request in temporary storage
             tmp.put(transaction.getTid().getTid(), transaction.getRequest());
             // always return true as simplification
             responseObserver.onNext(Response.newBuilder().setStatus(true).build());
             responseObserver.onCompleted();
+            logger.logInfo(String.format("Prepared %s [%s].", MessageLib.REQUEST(transaction.getRequest()),transaction.getTid().getTid()));
         }
 
         /**
@@ -122,6 +123,8 @@ public class ParticipantImpl {
             Response response = null;
             Operation o = request.getOperation();
             String key = request.getKey(), value = request.getValue();
+
+            logger.logInfo(String.format("Committing %s [%s].", MessageLib.REQUEST(request),tid.getTid()));
 
             switch (o) {
                 case PUT -> {
@@ -147,6 +150,7 @@ public class ParticipantImpl {
             }
             responseObserver.onNext(response);
             responseObserver.onCompleted();
+            logger.logInfo(String.format("Committed %s [%s].", MessageLib.REQUEST(request),tid.getTid()));
         }
 
         /**
