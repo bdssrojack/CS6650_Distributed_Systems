@@ -48,7 +48,7 @@ public class CoordinatorImpl {
          * Call from participant to inform the coordinator that new transaction has been raised.
          */
         @Override
-        public void newRequest(Trans transaction, StreamObserver<Response> responseObserver){
+        public void prepareTransaction(Trans transaction, StreamObserver<Response> responseObserver){
             logger.logInfo(String.format("New %s [%s] received.", MessageLib.REQUEST(transaction.getRequest()),transaction.getTid().getTid()));
             boolean commit = true;
             for(String replicaHost : Utils.replicas){

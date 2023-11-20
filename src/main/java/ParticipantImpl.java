@@ -93,7 +93,7 @@ public class ParticipantImpl {
             tmp.put(tid, request);
 
             // inform coordinator
-            Response response = coordinatorStub.newRequest(Trans.newBuilder().setTid(Tid.newBuilder().setTid(tid).build()).setRequest(request).build());
+            Response response = coordinatorStub.prepareTransaction(Trans.newBuilder().setTid(Tid.newBuilder().setTid(tid).build()).setRequest(request).build());
 
             responseObserver.onNext(response);
             responseObserver.onCompleted();
@@ -120,6 +120,7 @@ public class ParticipantImpl {
         @Override
         public void doCommit(Tid tid, StreamObserver<Response> responseObserver){
             Request request = tmp.get(tid.getTid());
+            tmp.remove(tid.getTid());
             Response response = null;
             Operation o = request.getOperation();
             String key = request.getKey(), value = request.getValue();

@@ -7,12 +7,17 @@ option java_package = "com.cs6650.server_client";
 option java_outer_classname = "ServerClientProto";
 
 service Service {
+  // Client -> Participant
   rpc Operate(Request) returns (Response);
+
+  // Coordinator -> Participant
   rpc CanCommit(Trans) returns(Response);
   rpc DoCommit(Tid) returns(Response);
   rpc DoAbort(Tid) returns(Response);
+
+  // Participant -> Coordinator
+  rpc PrepareTransaction(Trans) returns(Response);
   rpc HaveCommitted(Tid) returns(Response);
-  rpc NewRequest(Trans) returns(Response);
   rpc GetDecision(Tid) returns(Response);
 }
 
