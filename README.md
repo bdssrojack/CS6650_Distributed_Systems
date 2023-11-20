@@ -10,25 +10,33 @@ Follow the instructions bellow to start the gRPC server and client.
 1. If you skipped building, download the provided jar file to local file system then navigate to it in terminal, and go to step `3`
 2. If you built, then you can run the server and client in two ways:
    1. In IDEA, click the start button for main function in `src/main/java/ServerApp` to run the server first, then start the client in `src/main/java/ClientApp`. Go to step `4`
-   2. In command line, navigate to `~/CS6650_Project2/target`
+   2. In command line, navigate to `~/CS6650_Project3/target`
 3. Run `java -jar .\server.jar` to start the server. Open a new terminal session in the same directory, run `java -jar .\client.jar` to start a client
-4. Follow the command line prompt to interact with client. Press `q` to stop the client, press `ctrl + c` on the server session to stop server 
-5. To check out the log, see `/logs/`
+4. Follow the command line prompt to interact with client. Press `q` to stop the client, press `s` to switch replica connection, press `ctrl + c` on the server session to stop server 
+5. Check out the log in dir `/logs/`
 
 ## Executive Summary
 ### Assignment Overview
-This project is aimed to expose the student in a more practical environment of distributed system development by implementing
-remote method invoke for a client server module. Inter process communication is a well known paradigm in software development, especially
-in distributed system building, and RPC/RMI is a very important part it. By implementing a classic client-server communication with RPC, 
-student can get great practice and the essence of distributed system.
+This assignment expanded on the previous one made a step forward to replication control and agreement of servers. 
+It requires student to dive deep into the topic of agreement and consensus in distributed system. To achieve agreement among
+multiple replicas, students need to fully understand how 2-phase commit protocol works, as well as how to apply the protocol in
+the real life coding. The project is also a decent practice of object-oriented programming, design pattern and framework implementation.
+
 
 ### Technical Impression
-To discover the industrial standard and broad my tech stack, I chose to use gRPC to implement the remote call. gRPC is a super powerful, 
-widely used framework for inter-process communication. It uses protocol buffer as the communication protocol that makes the communication
-between services implemented in different programming languages become possible. It's also very handy that can automatically generate
-the fundamental code for RPC, such that developers can focus on the business logic without worry about the underlying framework.
-The performance of gRPC is also impressive, as well as its scalability.
+The usage of gRPC framework is inherited from the last assignment in this one. To achieve consistency with 2PC protocol, the server was split into
+two parts: participant, as the replica, and coordinator.
 
-Maven is another new technology that I learned from this project. It is a dependency manager that handles all the dependencies of your java
-project. It will import any package, plugin and dependency you'd like to cover in the project automatically so you don't have to concern about it.
-With the help of Maven, build can never be such easy with just one mvn command. 
+![2PC workflow](\2PC_workflow.png)
+*2PC workflow*
+
+The image above is the simplified workflow of 2-phase commit protocol. 
+1. Client arises an operation request by invoking the stub of one of the participant.
+2. The participant inform the coordinator to prepare this transaction.
+3. Coordinator asks each participant whether they can commit this request. Participant stores the request with its
+tid locally and reply its vote.
+4. If no participant's vote is negative, coordinator invoke each participant commit the transaction by tid.
+
+In the implementation, since instances of participant and coordinator invoke method of each other, both need to maintain 
+a stub and server for sending and receiving process call. The client app only need to talk to one participant each time and leave
+the consistency handling to coordinator.
