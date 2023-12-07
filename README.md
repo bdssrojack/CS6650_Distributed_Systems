@@ -27,7 +27,7 @@ the real life coding. The project is also a decent practice of object-oriented p
 The usage of gRPC framework is inherited from the last assignment in this one. To achieve consistency with 2PC protocol, the server was split into
 two parts: participant, as the replica, and coordinator.
 
-![2PC workflow](\2PC_workflow.png)
+![2PC workflow](./2PC_workflow.png)
 *2PC workflow*
 
 The image above is the simplified workflow of 2-phase commit protocol. 
