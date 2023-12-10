@@ -4,7 +4,6 @@ import java.util.Calendar;
 public class Utils {
     // address and port of server node replicas
     public static final int[] replicaPorts = {14515, 14516, 14517, 14518, 14519};
-//    public static final int[] replicaPorts = {14514};
     public static final String[] replicas;
     static {
         replicas = new String[replicaPorts.length];
@@ -12,10 +11,6 @@ public class Utils {
             replicas[i] = "localhost:" + replicaPorts[i];
         }
     }
-
-//    // address and port of coordinator
-//    public static final int coordinatorPort = 14514;
-//    public static final String coordinator = "localhost:"+coordinatorPort;
 
     /**
      * Generate the path of the log file

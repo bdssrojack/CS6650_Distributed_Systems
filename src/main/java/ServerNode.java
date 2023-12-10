@@ -129,7 +129,6 @@ public class ServerNode {
                 try {
                     promise = ServiceGrpc.newBlockingStub(channel).withDeadlineAfter(2, TimeUnit.SECONDS).prepare(proposal);
                     System.out.println("Promise received.");
-//                    promise = ServiceGrpc.newBlockingStub(channel).prepare(proposal);
                 } catch (StatusRuntimeException e) {
                     System.err.println("Promise timed out, restarting paxos");
                     channel.shutdownNow();

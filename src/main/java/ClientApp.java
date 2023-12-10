@@ -7,7 +7,6 @@ import io.grpc.Grpc;
 import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
 
-import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
@@ -38,14 +37,6 @@ public class ClientApp {
     public static void main(String[] args) {
         // TODO: leader election
         String target = Utils.replicas[0];
-
-        // init: randomly pick a participant to connect
-//        if(args.length > 0){
-//            System.err.println("Please don't attach any argument. You can specify a replica to connect to later.");
-//            return;
-//        } else {
-//            target = Utils.replicas[new Random().nextInt(Utils.replicas.length)];
-//        }
 
         // connect to server
         ManagedChannel channel = Grpc.newChannelBuilder(target, InsecureChannelCredentials.create()).build();
