@@ -127,12 +127,13 @@ public class ServerNode {
                 ManagedChannel channel = Grpc.newChannelBuilder(acceptorHost, InsecureChannelCredentials.create()).build();
                 Promise promise;
                 try {
-                    promise = ServiceGrpc.newBlockingStub(channel).withDeadlineAfter(2, TimeUnit.SECONDS).prepare(proposal);
+                    promise = ServiceGrpc.newBlockingStub(channel).withDeadlineAfter(2000, TimeUnit.MILLISECONDS).prepare(proposal);
                     System.out.println("Promise received.");
                 } catch (StatusRuntimeException e) {
                     System.err.println("Promise timed out, restarting paxos");
                     channel.shutdownNow();
-                    continue;
+                    operate(request, responseStreamObserver);
+                    return;
                 }
 
                 if (promise.getNAccepted().equals("N")) {
@@ -192,6 +193,15 @@ public class ServerNode {
 
         @Override
         public void prepare(Proposal proposal, StreamObserver<Promise> promiseStreamObserver) {
+            // simulate acceptor random failure
+            if(Math.random()%3 == 0){
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+
             Promise promise;
             if (promisedId == null || proposal.getN().compareTo(promisedId) > 0) {
                 System.out.printf("Incoming proposal %s is newer than current promised %s, promise to this one\n", proposal.getN(), promisedId);

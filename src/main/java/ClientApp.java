@@ -11,7 +11,7 @@ import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 public class ClientApp {
-    private static final LogHandler logger = new LogHandler(ClientApp.class.getSimpleName());
+    private static final LogHandler logger = new LogHandler(Utils.genLogFilePath(ClientApp.class.getSimpleName()));
     private final ServiceGrpc.ServiceBlockingStub blockingStub;
 
     public ClientApp(Channel channel) {
