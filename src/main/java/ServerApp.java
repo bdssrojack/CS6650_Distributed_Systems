@@ -3,22 +3,22 @@ import java.util.Arrays;
 
 public class ServerApp {
     public static void main(String[] args) {
-        // start coordinator
-        new Thread(() -> {
-            try {
-                new CoordinatorImpl();
-            } catch (IOException | InterruptedException e) {
-                System.err.printf("Coordinator init failed. %s\n", e);
-            }
-        }).start();
+//        // start coordinator
+//        new Thread(() -> {
+//            try {
+//                new CoordinatorImpl();
+//            } catch (IOException | InterruptedException e) {
+//                System.err.printf("Coordinator init failed. %s\n", e);
+//            }
+//        }).start();
 
-        // start participants
+        // start server nodes
         for (int p : Utils.replicaPorts) {
             new Thread(() -> {
                 try {
-                    new ParticipantImpl(p);
+                    new ServerNode(p);
                 } catch (IOException | InterruptedException e) {
-                    System.err.printf("Participant %s init failed. %s\n", p, e);
+                    System.err.printf("Server node %s init failed. %s\n", p, e);
                 }
             }).start();
         }

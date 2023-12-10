@@ -17,7 +17,7 @@ public class LogHandler extends Logger {
             dir.mkdir();
         }
         try {
-            fileHandler = new FileHandler("logs/" + name + new SimpleDateFormat("M-d-yyyy HH_mm").format(Calendar.getInstance().getTime()) + ".log");
+            fileHandler = new FileHandler(name);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -34,6 +34,8 @@ public class LogHandler extends Logger {
     }
 
     public void log(Response response) {
+        if(response == null)
+            return;
         if (response.getStatus()) {
             logInfo(response.getMsg());
         } else {

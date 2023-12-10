@@ -7,18 +7,43 @@ option java_package = "com.cs6650.server_client";
 option java_outer_classname = "ServerClientProto";
 
 service Service {
-  // Client -> Participant
+  // Client -> Proposer
   rpc Operate(Request) returns (Response);
 
-  // Coordinator -> Participant
-  rpc CanCommit(Trans) returns(Response);
-  rpc DoCommit(Tid) returns(Response);
-  rpc DoAbort(Tid) returns(Response);
+  // Proposer -> Acceptor
+  rpc Prepare(Proposal) returns (Promise); // rise a proposal to all acceptors
+  rpc Accept(Proposal) returns (Response); // ask acceptor to accept a proposal
+  rpc GetConsensus(Request) returns (Response); // ask all acceptors about a value, return the majority
 
-  // Participant -> Coordinator
-  rpc PrepareTransaction(Trans) returns(Response);
-  rpc HaveCommitted(Tid) returns(Response);
-  rpc GetDecision(Tid) returns(Response);
+  // Acceptor -> Learner
+  rpc Learn(Proposal) returns (Response); // Teach a learner the agreement
+
+  // Coordinator -> Participant
+//  rpc CanCommit(Trans) returns(Response);
+//  rpc DoCommit(Tid) returns(Response);
+//  rpc DoAbort(Tid) returns(Response);
+//
+//  // Participant -> Coordinator
+//  rpc PrepareTransaction(Trans) returns(Response);
+//  rpc HaveCommitted(Tid) returns(Response);
+//  rpc GetDecision(Tid) returns(Response);
+}
+
+/* The value that PAXOS are going to reach consensus on*/
+message PaxosValue {
+  string key = 1;
+  string val = 2;
+}
+
+message Proposal {
+  string n = 1;
+  PaxosValue v = 2;
+}
+
+message Promise {
+  string n_curr = 1; // sequence number that promise to
+  string n_accepted = 2; // sequence number of previously accepted proposal, empty for no record(default value), "N" for NACK
+  PaxosValue v_accepted = 3; // value in the past proposal that it has accepted previously that had the highest number less than seq
 }
 
 message Request {
@@ -32,14 +57,14 @@ message Response {
   optional string msg = 2;
 }
 
-message Tid {
-  string tid = 1;
-}
-
-message Trans {
-  Tid tid = 1;
-  Request request = 2;
-}
+//message Tid {
+//  string tid = 1;
+//}
+//
+//message Trans {
+//  Tid tid = 1;
+//  Request request = 2;
+//}
 
 enum Operation {
   PUT = 0;

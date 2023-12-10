@@ -36,20 +36,21 @@ public class ClientApp {
     }
 
     public static void main(String[] args) {
-        String target;
+        // TODO: leader election
+        String target = Utils.replicas[0];
 
         // init: randomly pick a participant to connect
-        if(args.length > 0){
-            System.err.println("Please don't attach any argument. You can specify a replica to connect to later.");
-            return;
-        } else {
-            target = Utils.replicas[new Random().nextInt(Utils.replicas.length)];
-        }
+//        if(args.length > 0){
+//            System.err.println("Please don't attach any argument. You can specify a replica to connect to later.");
+//            return;
+//        } else {
+//            target = Utils.replicas[new Random().nextInt(Utils.replicas.length)];
+//        }
 
-        // connect to participant
+        // connect to server
         ManagedChannel channel = Grpc.newChannelBuilder(target, InsecureChannelCredentials.create()).build();
         ClientApp client = new ClientApp(channel);
-        System.out.printf("Connected to target %s\n", target);
+        System.out.printf("Connected to leader proposer %s\n", target);
 
         client.prePop();
 
@@ -59,7 +60,7 @@ public class ClientApp {
             String operation, key, value;
 
             System.out.println("=================================================================================================");
-            System.out.println("Choose the operation: 1)PUT, 2)GET, 3)DELETE. Type 'q' to exit. Type 's' to change server node.");
+            System.out.println("Choose the operation: 1)PUT, 2)GET, 3)DELETE. Type 'q' to exit.");
             operation = scanner.nextLine();
 
             // quit
@@ -68,32 +69,32 @@ public class ClientApp {
             }
 
             // change server node
-            if (operation.equals("s")) {
-                System.out.println("Choose a node to connect to by typing the index.");
-                for(int i = 0; i < Utils.replicas.length; i++){
-                    System.out.println((i+1) + ". " + Utils.replicas[i]);
-                }
-
-                int newNodeIdx = Integer.parseInt(scanner.nextLine()) - 1;
-                if(newNodeIdx < 0 || newNodeIdx >= Utils.replicas.length){
-                    System.err.printf("Invalid index, provide a number between 1 to %s.\n", Utils.replicas.length);
-                    continue;
-                }
-
-                System.out.printf("Shutting down current channel to node %s. \n", target);
-                channel.shutdownNow();
-                if(channel.isShutdown()){
-                    System.out.printf("Current channel to %s is shut down.\n", target);
-                    target = Utils.replicas[newNodeIdx];
-                    System.out.printf("Connecting to %s.\n", target);
-                    channel = Grpc.newChannelBuilder(target, InsecureChannelCredentials.create()).build();
-                    client = new ClientApp(channel);
-                    System.out.printf("Successfully switched connection to %s.\n", target);
-                } else {
-                    System.out.printf("Failed to switch connection, still connecting to %s.\n", target);
-                }
-                continue;
-            }
+//            if (operation.equals("s")) {
+//                System.out.println("Choose a node to connect to by typing the index.");
+//                for(int i = 0; i < Utils.replicas.length; i++){
+//                    System.out.println((i+1) + ". " + Utils.replicas[i]);
+//                }
+//
+//                int newNodeIdx = Integer.parseInt(scanner.nextLine()) - 1;
+//                if(newNodeIdx < 0 || newNodeIdx >= Utils.replicas.length){
+//                    System.err.printf("Invalid index, provide a number between 1 to %s.\n", Utils.replicas.length);
+//                    continue;
+//                }
+//
+//                System.out.printf("Shutting down current channel to node %s. \n", target);
+//                channel.shutdownNow();
+//                if(channel.isShutdown()){
+//                    System.out.printf("Current channel to %s is shut down.\n", target);
+//                    target = Utils.replicas[newNodeIdx];
+//                    System.out.printf("Connecting to %s.\n", target);
+//                    channel = Grpc.newChannelBuilder(target, InsecureChannelCredentials.create()).build();
+//                    client = new ClientApp(channel);
+//                    System.out.printf("Successfully switched connection to %s.\n", target);
+//                } else {
+//                    System.out.printf("Failed to switch connection, still connecting to %s.\n", target);
+//                }
+//                continue;
+//            }
 
             System.out.print("Type the KEY: ");
             key = scanner.nextLine();
